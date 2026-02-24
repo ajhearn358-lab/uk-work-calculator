@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UK Work Entitlement Calculator</title>
+
 <style>
 body {
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -55,23 +56,33 @@ input {
     margin-top: 15px;
     font-weight: bold;
 }
-.paywall {
-    margin-top: 15px;
-    padding: 15px;
-    background: #fff3cd;
-    border-radius: 8px;
+.disclaimer {
+    background:#f8f9fa;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:20px;
+    font-size:14px;
 }
-.unlock-btn {
-    margin-top: 10px;
-    background: green;
-    color: white;
+footer {
+    margin-top:40px;
+    font-size:12px;
+    text-align:center;
+    color:#666;
 }
 </style>
 </head>
+
 <body>
 
 <div class="container">
 <h1>UK Work Entitlement Calculator</h1>
+
+<div class="disclaimer">
+<strong>Important Disclaimer:</strong><br>
+This calculator provides general guidance based on UK statutory rules and is not legal advice.
+Results are estimates only and may not reflect your contractual terms.
+Always confirm details with your employer, GOV.UK, or a qualified employment solicitor.
+</div>
 
 <div class="tabs">
 <button onclick="showTab('holiday')" class="active" id="holidayTab">Holiday</button>
@@ -81,35 +92,39 @@ input {
 
 <div id="holiday">
 <label>Days worked per week:</label>
-<input type="number" id="daysPerWeek">
+<input type="number" id="daysPerWeek" min="1" max="7">
 <button class="calculate-btn" onclick="calculateHoliday()">Calculate</button>
 <div class="result" id="holidayResult"></div>
 </div>
 
 <div id="redundancy" style="display:none;">
-<label>Age:</label>
-<input type="number" id="age">
-<label>Years of service:</label>
-<input type="number" id="years">
-<label>Weekly pay (£):</label>
-<input type="number" id="weeklyPay">
+<label>Current Age:</label>
+<input type="number" id="age" min="16">
+
+<label>Years of Continuous Service (max 20 counted):</label>
+<input type="number" id="years" min="0" max="50">
+
+<label>Weekly Gross Pay (£):</label>
+<input type="number" id="weeklyPay" min="0">
+
 <button class="calculate-btn" onclick="calculateRedundancy()">Calculate</button>
 <div class="result" id="redundancyResult"></div>
 </div>
 
 <div id="notice" style="display:none;">
-<label>Years worked:</label>
-<input type="number" id="noticeYears">
+<label>Years Worked:</label>
+<input type="number" id="noticeYears" min="0">
+
 <button class="calculate-btn" onclick="calculateNotice()">Calculate</button>
 <div class="result" id="noticeResult"></div>
 </div>
 
-<div class="paywall" id="paywall" style="display:none;">
-Full breakdown unlocked for £1.99 (Stripe integration coming next).
-<button class="unlock-btn">Unlock</button>
 </div>
 
-</div>
+<footer>
+© 2026 UK Work Entitlement Calculator.  
+This tool is provided for informational purposes only and does not constitute legal advice.
+</footer>
 
 <script>
 function showTab(tab) {
@@ -125,31 +140,53 @@ function showTab(tab) {
 }
 
 function calculateHoliday() {
-    let days = document.getElementById('daysPerWeek').value;
+    let days = parseFloat(document.getElementById('daysPerWeek').value);
+    if (!days) return;
     let entitlement = (days * 5.6).toFixed(1);
     document.getElementById('holidayResult').innerText =
-        "Estimated statutory entitlement: " + entitlement + " days per year (preview)";
-    document.getElementById('paywall').style.display = 'block';
+        "Statutory holiday entitlement: " + entitlement + " days per year.";
 }
 
 function calculateRedundancy() {
-    let age = document.getElementById('age').value;
-    let years = document.getElementById('years').value;
-    let weekly = document.getElementById('weeklyPay').value;
-    let cap = 700;
-    if (weekly > cap) weekly = cap;
-    let result = (years * weekly).toFixed(2);
+    let age = parseInt(document.getElementById('age').value);
+    let years = parseInt(document.getElementById('years').value);
+    let weekly = parseFloat(document.getElementById('weeklyPay').value);
+
+    if (!age || !years || !weekly) return;
+
+    const weeklyCap = 700; 
+    if (weekly > weeklyCap) weekly = weeklyCap;
+
+    if (years > 20) years = 20;
+
+    let totalWeeks = 0;
+
+    for (let i = 0; i < years; i++) {
+        let yearAge = age - i;
+        if (yearAge < 22) {
+            totalWeeks += 0.5;
+        } else if (yearAge >= 22 && yearAge <= 40) {
+            totalWeeks += 1;
+        } else {
+            totalWeeks += 1.5;
+        }
+    }
+
+    let redundancyPay = (totalWeeks * weekly).toFixed(2);
+
     document.getElementById('redundancyResult').innerText =
-        "Estimated redundancy pay: £" + result + " (preview)";
-    document.getElementById('paywall').style.display = 'block';
+        "Estimated statutory redundancy pay: £" + redundancyPay +
+        " (Weekly cap applied: £" + weeklyCap + ")";
 }
 
 function calculateNotice() {
-    let years = document.getElementById('noticeYears').value;
+    let years = parseInt(document.getElementById('noticeYears').value);
+    if (!years) return;
+
     let notice = years < 12 ? years : 12;
+
     document.getElementById('noticeResult').innerText =
-        "Statutory notice: " + notice + " weeks (preview)";
-    document.getElementById('paywall').style.display = 'block';
+        "Statutory minimum notice period: " + notice + " week(s).";
 }
 </script>
 
