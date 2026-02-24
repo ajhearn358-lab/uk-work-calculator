@@ -1,131 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UK Work Entitlement Calculator</title>
 
 <style>
-body {
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #f4f6f8;
-    margin: 0;
-    padding: 20px;
-}
-
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 30px;
-    border-radius: 14px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.disclaimer {
-    background: #f1f1f1;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 25px;
-}
-
-label {
-    font-weight: 600;
-    font-size: 14px;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin: 6px 0 15px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-
-button {
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 15px;
-}
-
-.primary {
-    background: black;
-    color: white;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.unlock {
-    background: #6c47ff;
-    color: white;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.result {
-    margin-top: 15px;
-    font-weight: bold;
-    font-size: 16px;
-}
-
-.small {
-    font-size: 12px;
-    color: #666;
-    text-align: center;
-    margin-top: 8px;
-}
-
-footer {
-    text-align: center;
-    font-size: 12px;
-    margin-top: 25px;
-    color: #666;
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f4f6f8; padding:20px; }
+.container { max-width:700px; margin:auto; background:white; padding:30px; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.08); }
+h1 { text-align:center; }
+.disclaimer { background:#f1f1f1; padding:15px; border-radius:8px; font-size:14px; margin-bottom:20px; }
+input { width:100%; padding:10px; margin:8px 0 15px 0; border-radius:6px; border:1px solid #ccc; }
+button { padding:12px; border:none; border-radius:8px; cursor:pointer; width:100%; margin-top:10px; }
+.primary { background:black; color:white; }
+.unlock { background:#6c47ff; color:white; }
+.download { background:#0d6efd; color:white; }
+.result { margin-top:15px; font-weight:bold; font-size:18px; }
+.small { font-size:12px; color:#666; text-align:center; margin-top:8px; }
+.premium { background:#f0fff4; padding:20px; border-radius:8px; margin-top:15px; }
+footer { text-align:center; font-size:12px; margin-top:25px; color:#666; }
+@media print {
+    button { display:none; }
+    body { background:white; }
+    .container { box-shadow:none; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container" id="reportArea">
 <h1>UK Work Entitlement Calculator</h1>
 
 <div class="disclaimer">
-<strong>Important:</strong> This calculator provides general guidance based on UK statutory rules. It is not legal advice. Results are estimates only and may not reflect contractual terms.
+<strong>Important:</strong> This tool provides general guidance based on UK statutory rules and is not legal advice.
 </div>
 
 <h3>Redundancy Calculator</h3>
 
 <label>Age</label>
-<input type="number" id="age" placeholder="e.g. 42">
+<input type="number" id="age">
 
 <label>Years of service</label>
-<input type="number" id="years" placeholder="e.g. 8">
+<input type="number" id="years">
 
 <label>Weekly pay (£)</label>
-<input type="number" id="weekly" placeholder="e.g. 550">
+<input type="number" id="weekly">
 
 <button class="primary" onclick="calculate()">Calculate</button>
 
 <div class="result" id="result"></div>
+<div id="premiumArea"></div>
 
-<button class="unlock" onclick="unlock()">Unlock Full Breakdown – £2.99</button>
+<button class="unlock" id="unlockBtn" onclick="unlock()">Unlock Full Breakdown – £2.99</button>
+<button class="download" id="downloadBtn" style="display:none;" onclick="downloadPDF()">Download PDF Report</button>
+
 <div class="small">Secure payment processed by Stripe.</div>
 
 </div>
 
 <footer>
-© 2026 UK Work Entitlement Calculator. Informational tool only.
+© 2026 UK Work Calculator. Informational tool only.
 </footer>
 
 <script>
+
+const isPaid = new URLSearchParams(window.location.search).get("paid") === "true";
+
+if (isPaid) {
+    document.getElementById("unlockBtn").style.display = "none";
+}
+
 function calculate() {
 
 let age = parseInt(document.getElementById("age").value);
@@ -142,29 +87,49 @@ if (weekly > weeklyCap) weekly = weeklyCap;
 if (years > 20) years = 20;
 
 let totalWeeks = 0;
+let breakdown = [];
 
 for (let i = 0; i < years; i++) {
     let yearAge = age - i;
+    let weeks;
 
-    if (yearAge < 22) {
-        totalWeeks += 0.5;
-    } else if (yearAge <= 40) {
-        totalWeeks += 1;
-    } else {
-        totalWeeks += 1.5;
-    }
+    if (yearAge < 22) weeks = 0.5;
+    else if (yearAge <= 40) weeks = 1;
+    else weeks = 1.5;
+
+    totalWeeks += weeks;
+    breakdown.push("Age " + yearAge + ": " + weeks + " week(s)");
 }
 
 let redundancyPay = (totalWeeks * weekly).toFixed(2);
 
 document.getElementById("result").innerHTML =
-"Estimated statutory redundancy pay: £" + redundancyPay +
-"<br><small>Detailed year-by-year breakdown available after purchase.</small>";
+"Estimated statutory redundancy pay: £" + redundancyPay;
+
+if (isPaid) {
+
+document.getElementById("premiumArea").innerHTML =
+"<div class='premium'>" +
+"<h3>Full Redundancy Breakdown</h3>" +
+"<strong>Total weeks entitlement:</strong> " + totalWeeks + "<br>" +
+"<strong>Weekly pay used (statutory cap applied if necessary):</strong> £" + weekly + "<br><br>" +
+breakdown.join("<br>") +
+"<br><br><strong>Total statutory redundancy pay: £" + redundancyPay + "</strong>" +
+"</div>";
+
+document.getElementById("downloadBtn").style.display = "block";
+
+}
 }
 
 function unlock() {
 window.location.href = "https://buy.stripe.com/cNi28rdRU1BsgPAehygQE00";
 }
+
+function downloadPDF() {
+window.print();
+}
+
 </script>
 
 </body>
