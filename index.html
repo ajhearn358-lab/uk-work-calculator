@@ -22,47 +22,48 @@ body {
     box-shadow: 0 5px 20px rgba(0,0,0,0.08);
 }
 
-h1 {
-    text-align: center;
-}
+h1 { text-align:center; }
 
 .tabs {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
+    display:flex;
+    margin-bottom:20px;
 }
 
-button {
-    flex: 1;
-    padding: 10px;
-    margin: 3px;
-    border: none;
-    border-radius: 8px;
-    background: #e0e0e0;
-    cursor: pointer;
+.tabs button {
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    margin:3px;
+    cursor:pointer;
+    background:#e0e0e0;
 }
 
-button.active {
-    background: #000;
-    color: white;
+.tabs button.active {
+    background:black;
+    color:white;
 }
 
 input {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
 }
 
-.calculate-btn {
-    background: black;
-    color: white;
+button.calculate {
+    background:black;
+    color:white;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
 }
 
 .result {
-    margin-top: 20px;
-    line-height: 1.6;
+    margin-top:20px;
+    line-height:1.6;
 }
 
 .disclaimer {
@@ -71,6 +72,22 @@ input {
     border-radius:8px;
     margin-bottom:20px;
     font-size:14px;
+}
+
+.lock-box {
+    background:#f8f9fa;
+    padding:15px;
+    border-radius:8px;
+    margin-top:15px;
+}
+
+.unlock-btn {
+    background:black;
+    color:white;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
 }
 
 footer {
@@ -85,6 +102,7 @@ footer {
 <body>
 
 <div class="container">
+
 <h1>UK Work Entitlement Calculator</h1>
 
 <div class="disclaimer">
@@ -92,6 +110,8 @@ footer {
 This calculator provides general guidance based on UK statutory rules and is not legal advice.
 Results are estimates only and may not reflect contractual terms.
 Always confirm details with your employer, GOV.UK, or a qualified employment solicitor.
+<br><br>
+Last updated: April 2026 (UK statutory rates)
 </div>
 
 <div class="tabs">
@@ -103,29 +123,28 @@ Always confirm details with your employer, GOV.UK, or a qualified employment sol
 <div id="holiday">
 <label>Days worked per week:</label>
 <input type="number" id="daysPerWeek" min="1" max="7">
-<button class="calculate-btn" onclick="calculateHoliday()">Calculate</button>
+<button class="calculate" onclick="calculateHoliday()">Calculate</button>
 <div class="result" id="holidayResult"></div>
 </div>
 
 <div id="redundancy" style="display:none;">
 <label>Current Age:</label>
-<input type="number" id="age" min="16">
+<input type="number" id="age">
 
 <label>Years of Continuous Service (max 20 counted):</label>
-<input type="number" id="years" min="0" max="50">
+<input type="number" id="years">
 
 <label>Weekly Gross Pay (£):</label>
-<input type="number" id="weeklyPay" min="0">
+<input type="number" id="weeklyPay">
 
-<button class="calculate-btn" onclick="calculateRedundancy()">Calculate</button>
+<button class="calculate" onclick="calculateRedundancy()">Calculate</button>
 <div class="result" id="redundancyResult"></div>
 </div>
 
 <div id="notice" style="display:none;">
 <label>Years Worked:</label>
-<input type="number" id="noticeYears" min="0">
-
-<button class="calculate-btn" onclick="calculateNotice()">Calculate</button>
+<input type="number" id="noticeYears">
+<button class="calculate" onclick="calculateNotice()">Calculate</button>
 <div class="result" id="noticeResult"></div>
 </div>
 
@@ -133,7 +152,8 @@ Always confirm details with your employer, GOV.UK, or a qualified employment sol
 
 <footer>
 © 2026 UK Work Entitlement Calculator.  
-This tool is provided for informational purposes only and does not constitute legal advice.
+Not affiliated with GOV.UK.  
+This tool is for informational purposes only and does not constitute legal advice.
 </footer>
 
 <script>
@@ -169,41 +189,43 @@ function calculateRedundancy() {
 
     if (!age || !yearsInput || !weeklyInput) return;
 
-    const statutoryWeeklyCap = 700; 
+    const statutoryWeeklyCap = 700;
     let weeklyUsed = weeklyInput > statutoryWeeklyCap ? statutoryWeeklyCap : weeklyInput;
-
     let yearsUsed = yearsInput > 20 ? 20 : yearsInput;
 
     let totalWeeks = 0;
-    let breakdown = [];
 
     for (let i = 0; i < yearsUsed; i++) {
-
         let yearAge = age - i;
 
-        if (yearAge < 22) {
-            totalWeeks += 0.5;
-            breakdown.push("Age " + yearAge + ": 0.5 week");
-        } else if (yearAge >= 22 && yearAge <= 40) {
-            totalWeeks += 1;
-            breakdown.push("Age " + yearAge + ": 1 week");
-        } else {
-            totalWeeks += 1.5;
-            breakdown.push("Age " + yearAge + ": 1.5 weeks");
-        }
+        if (yearAge < 22) totalWeeks += 0.5;
+        else if (yearAge <= 40) totalWeeks += 1;
+        else totalWeeks += 1.5;
     }
 
     let redundancyPay = (totalWeeks * weeklyUsed).toFixed(2);
 
     document.getElementById('redundancyResult').innerHTML =
-        "<strong>Estimated Statutory Redundancy Pay: £" + redundancyPay + "</strong><br><br>" +
-        "Qualifying years counted: " + yearsUsed + " (maximum 20)<br>" +
-        "Total weeks entitlement: " + totalWeeks + " weeks<br>" +
-        "Weekly pay used (after statutory cap): £" + weeklyUsed + "<br><br>" +
-        "<details><summary><strong>Show Year-by-Year Breakdown</strong></summary><br>" +
-        breakdown.join("<br>") +
-        "</details><br><br>" +
-        "<em>Based on current UK statutory redundancy rules and weekly pay cap of £" + statutoryWeeklyCap + ".</em>";
+        "<div style='font-size:24px;font-weight:bold;'>£" + redundancyPay + "</div>" +
+        "Qualifying years counted: " + yearsUsed + "<br>" +
+        "Total weeks entitlement: " + totalWeeks + "<br>" +
+        "Weekly pay used (after cap): £" + weeklyUsed +
+
+        "<div class='lock-box' id='lockBox'>" +
+        "<br><strong>Full professional breakdown locked</strong><br><br>" +
+        "• Year-by-year entitlement calculation<br>" +
+        "• Printable formatted report<br>" +
+        "• Methodology explanation<br><br>" +
+        "<button class='unlock-btn' onclick='unlockReport()'>Unlock Full Report – £2.99</button>" +
+        "</div>";
+}
+
+function unlockReport() {
+
+    document.getElementById('lockBox').innerHTML =
+        "<strong>Full Breakdown (Demo Version)</strong><br><br>" +
+        "This section will be unlocked after Stripe payment integration.<br><br>" +
+        "Here we will generate a printable formatted redundancy report.";
 }
 
 function calculateNotice() {
