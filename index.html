@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UK Work Entitlement Calculator</title>
+<title>UK Redundancy Pay Calculator | Statutory Redundancy & Notice Calculator</title>
+
+<meta name="description" content="Free UK redundancy pay calculator. Estimate statutory redundancy pay, notice period and holiday entitlement instantly. Download a detailed breakdown report.">
 
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f4f6f8; padding:20px; }
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f4f6f8; padding:20px; margin:0; }
 .container { max-width:700px; margin:auto; background:white; padding:30px; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.08); }
 h1 { text-align:center; }
-.disclaimer { background:#f1f1f1; padding:15px; border-radius:8px; font-size:14px; margin-bottom:20px; }
 input { width:100%; padding:10px; margin:8px 0 15px 0; border-radius:6px; border:1px solid #ccc; }
 button { padding:12px; border:none; border-radius:8px; cursor:pointer; width:100%; margin-top:10px; }
 .primary { background:black; color:white; }
@@ -18,7 +19,8 @@ button { padding:12px; border:none; border-radius:8px; cursor:pointer; width:100
 .result { margin-top:15px; font-weight:bold; font-size:18px; }
 .small { font-size:12px; color:#666; text-align:center; margin-top:8px; }
 .premium { background:#f0fff4; padding:20px; border-radius:8px; margin-top:15px; }
-footer { text-align:center; font-size:12px; margin-top:25px; color:#666; }
+.info-section { max-width:800px; margin:40px auto; padding:20px; line-height:1.6; }
+footer { text-align:center; font-size:12px; margin-top:40px; color:#666; padding:20px; }
 @media print {
     button { display:none; }
     body { background:white; }
@@ -29,12 +31,11 @@ footer { text-align:center; font-size:12px; margin-top:25px; color:#666; }
 
 <body>
 
-<div class="container" id="reportArea">
-<h1>UK Work Entitlement Calculator</h1>
+<div class="container">
 
-<div class="disclaimer">
-<strong>Important:</strong> This tool provides general guidance based on UK statutory rules and is not legal advice.
-</div>
+<h1>UK Redundancy Pay Calculator</h1>
+
+<p style="text-align:center;">Instantly estimate your statutory redundancy pay and notice entitlement based on UK legislation.</p>
 
 <h3>Redundancy Calculator</h3>
 
@@ -59,27 +60,60 @@ footer { text-align:center; font-size:12px; margin-top:25px; color:#666; }
 
 </div>
 
+<!-- SEO CONTENT SECTION -->
+
+<section class="info-section">
+
+<h2>About This UK Redundancy Calculator</h2>
+
+<p>This calculator provides an estimate of statutory redundancy pay and minimum notice entitlement based on current UK statutory rules. It is designed to help employees understand what they may be entitled to if facing redundancy.</p>
+
+<h2>How Statutory Redundancy Pay Is Calculated</h2>
+
+<p>Statutory redundancy pay depends on:</p>
+<ul>
+<li>Your age</li>
+<li>Your length of continuous service</li>
+<li>Your weekly pay (subject to a statutory cap)</li>
+</ul>
+
+<p>The formula applies:</p>
+<ul>
+<li>0.5 week’s pay for each full year under age 22</li>
+<li>1 week’s pay for each full year aged 22–40</li>
+<li>1.5 weeks’ pay for each full year aged 41 and over</li>
+</ul>
+
+<h2>Notice Period Entitlement</h2>
+
+<p>Employees are generally entitled to at least one week’s notice for each full year of service, up to a maximum of 12 weeks, unless their contract provides more.</p>
+
+<h2>Important Information</h2>
+
+<p>This tool provides general informational guidance only and does not constitute legal advice. For complex situations, professional advice should be sought.</p>
+
+</section>
+
 <footer>
 © 2026 UK Work Calculator. Informational tool only.
+<br><br>
+<a href="/privacy-policy.html">Privacy Policy</a> |
+<a href="/terms-and-conditions.html">Terms & Conditions</a>
 </footer>
 
 <script>
 
-// 🔐 SECURE UNLOCK SYSTEM
-
+// Secure unlock logic
 const urlParams = new URLSearchParams(window.location.search);
 const sessionId = urlParams.get("session_id");
 
-// If coming from Stripe success redirect
 if (sessionId) {
     localStorage.setItem("premiumUnlocked", "true");
     window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-// Check stored unlock
 const isPaid = localStorage.getItem("premiumUnlocked") === "true";
 
-// Hide unlock button if paid
 if (isPaid) {
     document.getElementById("unlockBtn").style.display = "none";
 }
@@ -125,7 +159,7 @@ document.getElementById("premiumArea").innerHTML =
 "<div class='premium'>" +
 "<h3>Full Redundancy Breakdown</h3>" +
 "<strong>Total weeks entitlement:</strong> " + totalWeeks + "<br>" +
-"<strong>Weekly pay used (statutory cap applied if necessary):</strong> £" + weekly + "<br><br>" +
+"<strong>Weekly pay used:</strong> £" + weekly + "<br><br>" +
 breakdown.join("<br>") +
 "<br><br><strong>Total statutory redundancy pay: £" + redundancyPay + "</strong>" +
 "</div>";
