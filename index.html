@@ -65,8 +65,21 @@ footer { text-align:center; font-size:12px; margin-top:25px; color:#666; }
 
 <script>
 
-const isPaid = new URLSearchParams(window.location.search).get("paid") === "true";
+// 🔐 SECURE UNLOCK SYSTEM
 
+const urlParams = new URLSearchParams(window.location.search);
+const sessionId = urlParams.get("session_id");
+
+// If coming from Stripe success redirect
+if (sessionId) {
+    localStorage.setItem("premiumUnlocked", "true");
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// Check stored unlock
+const isPaid = localStorage.getItem("premiumUnlocked") === "true";
+
+// Hide unlock button if paid
 if (isPaid) {
     document.getElementById("unlockBtn").style.display = "none";
 }
