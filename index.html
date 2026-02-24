@@ -17,53 +17,70 @@ body {
     max-width: 600px;
     margin: auto;
     background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
 }
 
 h1 {
     text-align: center;
+    margin-bottom: 20px;
 }
 
 .disclaimer {
-    background: #f0f0f0;
+    background: #f1f1f1;
     padding: 15px;
     border-radius: 8px;
     font-size: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+label {
+    font-weight: 600;
+    font-size: 14px;
 }
 
 input {
     width: 100%;
     padding: 10px;
-    margin: 8px 0;
+    margin: 6px 0 15px 0;
     border-radius: 6px;
     border: 1px solid #ccc;
 }
 
 button {
-    padding: 10px 16px;
+    padding: 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 15px;
 }
 
 .primary {
     background: black;
     color: white;
+    width: 100%;
+    margin-bottom: 10px;
 }
 
 .unlock {
     background: #6c47ff;
     color: white;
-    margin-top: 15px;
     width: 100%;
+    margin-top: 10px;
 }
 
 .result {
     margin-top: 15px;
     font-weight: bold;
+    font-size: 16px;
+}
+
+.small {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    margin-top: 8px;
 }
 
 footer {
@@ -81,25 +98,26 @@ footer {
 <h1>UK Work Entitlement Calculator</h1>
 
 <div class="disclaimer">
-<strong>Important:</strong> This calculator provides general guidance based on UK statutory rules. It is not legal advice. Results are estimates only and may not reflect your contractual terms.
+<strong>Important:</strong> This calculator provides general guidance based on UK statutory rules. It is not legal advice. Results are estimates only and may not reflect contractual terms.
 </div>
 
 <h3>Redundancy Calculator</h3>
 
 <label>Age</label>
-<input type="number" id="age">
+<input type="number" id="age" placeholder="e.g. 42">
 
 <label>Years of service</label>
-<input type="number" id="years">
+<input type="number" id="years" placeholder="e.g. 8">
 
 <label>Weekly pay (£)</label>
-<input type="number" id="weekly">
+<input type="number" id="weekly" placeholder="e.g. 550">
 
 <button class="primary" onclick="calculate()">Calculate</button>
 
 <div class="result" id="result"></div>
 
 <button class="unlock" onclick="unlock()">Unlock Full Breakdown – £2.99</button>
+<div class="small">Secure payment processed by Stripe.</div>
 
 </div>
 
@@ -114,7 +132,10 @@ let age = parseInt(document.getElementById("age").value);
 let years = parseInt(document.getElementById("years").value);
 let weekly = parseFloat(document.getElementById("weekly").value);
 
-if (!age || !years || !weekly) return;
+if (!age || !years || !weekly) {
+    alert("Please complete all fields.");
+    return;
+}
 
 const weeklyCap = 700;
 if (weekly > weeklyCap) weekly = weeklyCap;
@@ -138,11 +159,11 @@ let redundancyPay = (totalWeeks * weekly).toFixed(2);
 
 document.getElementById("result").innerHTML =
 "Estimated statutory redundancy pay: £" + redundancyPay +
-"<br><small>Full breakdown available after purchase.</small>";
+"<br><small>Detailed year-by-year breakdown available after purchase.</small>";
 }
 
 function unlock() {
-window.location.href = "https://buy.stripe.com/test_4gM9AVeyPgzn4Mf6SLf3a00";
+window.location.href = "https://buy.stripe.com/cNi28rdRU1BsgPAehygQE00";
 }
 </script>
 
