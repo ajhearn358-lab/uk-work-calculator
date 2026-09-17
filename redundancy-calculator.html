@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UK Redundancy Pay Calculator | Statutory Redundancy & Notice Calculator</title>
 
-<meta name="description" content="Free UK redundancy pay calculator. Estimate statutory redundancy pay, notice period and holiday entitlement instantly. Download a detailed breakdown report.">
+<meta name="description" content="Estimate statutory redundancy pay for England, Scotland and Wales using 2026/27 rates. Check eligibility, age bands and capped weekly pay.">
 
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f4f6f8; padding:20px; margin:0; }
 .container { max-width:700px; margin:auto; background:white; padding:30px; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.08); }
 h1 { text-align:center; }
-input { width:100%; padding:10px; margin:8px 0 15px 0; border-radius:6px; border:1px solid #ccc; }
+input { box-sizing:border-box; width:100%; padding:10px; margin:8px 0 15px 0; border-radius:6px; border:1px solid #ccc; }
 button { padding:12px; border:none; border-radius:8px; cursor:pointer; width:100%; margin-top:10px; }
 .primary { background:black; color:white; }
 .unlock { background:#6c47ff; color:white; }
@@ -35,22 +35,26 @@ footer { text-align:center; font-size:12px; margin-top:40px; color:#666; padding
 
 <h1>UK Redundancy Pay Calculator</h1>
 
-<p style="text-align:center;">Instantly estimate your statutory redundancy pay and notice entitlement based on UK legislation.</p>
+<p style="text-align:center;">Estimate statutory redundancy pay for England, Scotland and Wales. This version covers redundancies from 6 April 2026 to 5 April 2027.</p>
 
 <h3>Redundancy Calculator</h3>
 
-<label>Age</label>
-<input type="number" id="age">
+<label for="redundancyDate">Relevant redundancy date</label>
+<input type="date" id="redundancyDate" min="2026-04-06" max="2027-04-05" required>
+<p>Usually the end of your notice period. Payment in lieu of notice can change this date and your qualifying service: <a href="https://www.acas.org.uk/manage-staff-redundancies/work-out-redundancy-pay">check Acas guidance</a>.</p>
+<p>For Northern Ireland, or dates outside this range, use the <a href="https://www.gov.uk/calculate-your-redundancy-pay">official calculator and regional guidance</a>.</p>
+<label for="age">Age at the relevant redundancy date (whole years)</label>
+<input type="number" id="age" min="16" max="120" step="1" required>
 
-<label>Years of service</label>
-<input type="number" id="years">
+<label for="years">Completed years of continuous service at that date</label>
+<input type="number" id="years" min="0" step="1" required>
 
-<label>Weekly pay (£)</label>
-<input type="number" id="weekly">
+<label for="weekly">Gross weekly pay before tax (£)</label>
+<input type="number" id="weekly" min="0" step="0.01" required>
 
 <button class="primary" onclick="calculate()">Calculate</button>
 
-<div class="result" id="result"></div>
+<div class="result" id="result" role="status" aria-live="polite"></div>
 <div id="premiumArea"></div>
 
 <button class="unlock" id="unlockBtn" onclick="unlock()">Unlock Full Breakdown – £2.99</button>
@@ -66,7 +70,7 @@ footer { text-align:center; font-size:12px; margin-top:40px; color:#666; padding
 
 <h2>About This UK Redundancy Calculator</h2>
 
-<p>This calculator provides an estimate of statutory redundancy pay and minimum notice entitlement based on current UK statutory rules. It is designed to help employees understand what they may be entitled to if facing redundancy.</p>
+<p>This estimate assumes you are an eligible employee with at least two years of continuous service. Enhanced contractual redundancy pay, notice pay and holiday pay are separate. Eligibility exceptions can apply. The weekly pay cap is £751 for the supported dates; only the last 20 completed years count. Rates checked 17 September 2026 against <a href="https://www.gov.uk/redundancy-your-rights/redundancy-pay">GOV.UK</a>.</p>
 
 <h2>How Statutory Redundancy Pay Is Calculated</h2>
 
@@ -86,7 +90,7 @@ footer { text-align:center; font-size:12px; margin-top:40px; color:#666; padding
 
 <h2>Notice Period Entitlement</h2>
 
-<p>Employees are generally entitled to at least one week’s notice for each full year of service, up to a maximum of 12 weeks, unless their contract provides more.</p>
+<p>Employer statutory notice is normally one week after one month of service, then one week per completed year from two years of service, capped at 12 weeks. Your contract may provide more. Notice pay is not included in the redundancy figure above.</p>
 
 <h2>Important Information</h2>
 
@@ -118,55 +122,63 @@ if (isPaid) {
     document.getElementById("unlockBtn").style.display = "none";
 }
 
+function estimateRedundancy(age, years, weekly, date) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        !Number.isFinite(Date.parse(date + 'T00:00:00Z')) ||
+        new Date(date + 'T00:00:00Z').toISOString().slice(0, 10) !== date ||
+        date < '2026-04-06' || date > '2027-04-05') {
+        throw new Error('Choose a valid relevant redundancy date from 6 April 2026 to 5 April 2027. For other dates, use the official calculator.');
+    }
+    if (!Number.isInteger(age) || age < 16 || age > 120 ||
+        !Number.isInteger(years) || years < 0 || years > age ||
+        !Number.isFinite(weekly) || weekly < 0) {
+        throw new Error('Enter a valid age, completed years of service and non-negative weekly pay. Age and service must be whole years; service cannot exceed age.');
+    }
+    const weeklyCap = 751;
+    const weeklyUsed = Math.min(weekly, weeklyCap);
+    const qualifyingYears = years < 2 ? 0 : Math.min(years, 20);
+    let totalWeeks = 0;
+    const breakdown = [];
+    // Completed years are counted backwards: age 45 has four full years over 41.
+    for (let i = 1; i <= qualifyingYears; i++) {
+        const yearAge = age - i;
+        const weeks = yearAge < 22 ? 0.5 : yearAge < 41 ? 1 : 1.5;
+        totalWeeks += weeks;
+        breakdown.push('Completed service year from age ' + yearAge + ': ' + weeks + ' week(s)');
+    }
+    return { totalWeeks, weeklyUsed, qualifyingYears, breakdown,
+        pay: Math.round(totalWeeks * weeklyUsed * 100) / 100 };
+}
+
 function calculate() {
-
-let age = parseInt(document.getElementById("age").value);
-let years = parseInt(document.getElementById("years").value);
-let weekly = parseFloat(document.getElementById("weekly").value);
-
-if (!age || !years || !weekly) {
-    alert("Please complete all fields.");
-    return;
-}
-
-const weeklyCap = 700;
-if (weekly > weeklyCap) weekly = weeklyCap;
-if (years > 20) years = 20;
-
-let totalWeeks = 0;
-let breakdown = [];
-
-for (let i = 0; i < years; i++) {
-    let yearAge = age - i;
-    let weeks;
-
-    if (yearAge < 22) weeks = 0.5;
-    else if (yearAge <= 40) weeks = 1;
-    else weeks = 1.5;
-
-    totalWeeks += weeks;
-    breakdown.push("Age " + yearAge + ": " + weeks + " week(s)");
-}
-
-let redundancyPay = (totalWeeks * weekly).toFixed(2);
-
-document.getElementById("result").innerHTML =
-"Estimated statutory redundancy pay: £" + redundancyPay;
-
-if (isPaid) {
-
-document.getElementById("premiumArea").innerHTML =
-"<div class='premium'>" +
-"<h3>Full Redundancy Breakdown</h3>" +
-"<strong>Total weeks entitlement:</strong> " + totalWeeks + "<br>" +
-"<strong>Weekly pay used:</strong> £" + weekly + "<br><br>" +
-breakdown.join("<br>") +
-"<br><br><strong>Total statutory redundancy pay: £" + redundancyPay + "</strong>" +
-"</div>";
-
-document.getElementById("downloadBtn").style.display = "block";
-
-}
+    const result = document.getElementById('result');
+    document.getElementById('premiumArea').innerHTML = '';
+    document.getElementById('downloadBtn').style.display = 'none';
+    const raw = ['age', 'years', 'weekly'].map(id => document.getElementById(id).value.trim());
+    if (raw.some(value => value === '')) {
+        result.textContent = 'Please complete all fields.';
+        return;
+    }
+    try {
+        const [age, years, weekly] = raw.map(Number);
+        const date = document.getElementById('redundancyDate').value;
+        const estimate = estimateRedundancy(age, years, weekly, date);
+        result.textContent = 'Estimated statutory redundancy pay: £' + estimate.pay.toFixed(2) +
+            (years < 2 ? '. You normally need at least two years of continuous service to qualify. Your contract may provide a separate payment.' :
+            ' (' + estimate.totalWeeks + ' weeks × £' + estimate.weeklyUsed.toFixed(2) + ').');
+        if (isPaid && years >= 2) {
+            document.getElementById('premiumArea').innerHTML =
+                "<div class='premium'><h3>Full Redundancy Breakdown</h3>" +
+                '<strong>Total weeks entitlement:</strong> ' + estimate.totalWeeks + '<br>' +
+                '<strong>Weekly pay used:</strong> £' + estimate.weeklyUsed.toFixed(2) + '<br>' +
+                '<strong>Relevant date:</strong> ' + date + '<br><br>' +
+                estimate.breakdown.join('<br>') + '<br><br><strong>Total statutory redundancy pay: £' +
+                estimate.pay.toFixed(2) + '</strong></div>';
+            document.getElementById('downloadBtn').style.display = 'block';
+        }
+    } catch (error) {
+        result.textContent = error.message;
+    }
 }
 
 function unlock() {
